@@ -1,76 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>さが助</title>
+
 <style>
-body { font-family:sans-serif; text-align:center; padding:40px; }
-input { width:80%; padding:10px; font-size:16px; margin-bottom:20px; }
-button { display:block; width:80%; margin:10px auto; padding:12px;
-font-size:16px; border:none; border-radius:8px; cursor:pointer; }
-.mercari { background:#ff4d4f; color:white; }
-.yahoo { background:#ffcc00; }
-.aucfan { background:#0066cc; color:white; }
-.smart { background:black; color:white; }
+body{
+  font-family:sans-serif;
+  background:#f2f2f2;
+  text-align:center;
+  padding:30px;
+}
+
+h1{
+  font-size:28px;
+  margin-bottom:20px;
+}
+
+input{
+  width:90%;
+  padding:12px;
+  font-size:16px;
+  margin-bottom:20px;
+}
+
+button{
+  width:90%;
+  padding:14px;
+  margin:8px 0;
+  font-size:16px;
+  border:none;
+  border-radius:6px;
+  color:#fff;
+}
+
+.mercari{ background:#ea4f4f; }
+.yahoo{ background:#f5c400; color:#000; }
+.auction{ background:#2d66b3; }
+.smart{ background:#000; }
 </style>
 </head>
+
 <body>
 
 <h1>さが助</h1>
 
-<input type="text" id="keyword" placeholder="検索したい文字やURLを入力">
+<input id="searchBox" placeholder="検索したい文字やURLを入力">
 
-<button class="mercari" onclick="searchMercari()">メルカリ</button>
-<button class="yahoo" onclick="searchYahoo()">ヤフオク</button>
-<button class="aucfan" onclick="searchAucfan()">オークファン</button>
+<button class="mercari" onclick="goMercari()">メルカリ</button>
+<button class="yahoo" onclick="goYahoo()">ヤフオク</button>
+<button class="auction" onclick="goAuction()">オークファン</button>
 <button class="smart" onclick="smartSearch()">スマート検索</button>
 
 <script>
-function getRaw(){
-  return document.getElementById("keyword").value;
-}
-function getEncoded(){
-  return encodeURIComponent(getRaw());
+const siteUrl = "https://chic-sunburst-62b345.netlify.app";
+
+async function resolveUrl(input){
+  try{
+    const res = await fetch(siteUrl + "/.netlify/functions/resolve?url=" + encodeURIComponent(input));
+    const data = await res.json();
+
+    if(data.asin){
+      document.getElementById("searchBox").value = data.asin;
+    }else{
+      document.getElementById("searchBox").value = input;
+    }
+
+  }catch(e){
+    document.getElementById("searchBox").value = input;
+  }
 }
 
-function searchMercari(){
-  window.open("https://jp.mercari.com/search?keyword="+getEncoded());
+function getQueryParam(){
+  const params = new URLSearchParams(window.location.search);
+  return params.get("q");
 }
-function searchYahoo(){
-  window.open("https://auctions.yahoo.co.jp/search/search?p="+getEncoded());
+
+window.onload = function(){
+  const q = getQueryParam();
+  if(q){
+    resolveUrl(q);
+  }
+};
+
+function getValue(){
+  return document.getElementById("searchBox").value;
 }
-function searchAucfan(){
-  window.open("https://aucfan.com/search1/q-"+getEncoded()+"/");
+
+function goMercari(){
+  window.open("https://www.mercari.com/jp/search/?keyword=" + encodeURIComponent(getValue()),"_blank");
+}
+
+function goYahoo(){
+  window.open("https://auctions.yahoo.co.jp/search/search?p=" + encodeURIComponent(getValue()),"_blank");
+}
+
+function goAuction(){
+  window.open("https://aucfan.com/search1/q-" + encodeURIComponent(getValue()) + "/", "_blank");
 }
 
 function smartSearch(){
-  const text = getRaw();
-  const asinMatch = text.match(/B0[A-Z0-9]{8}/i);
-
-  if(asinMatch){
-    alert("ASIN検出: "+asinMatch[0]);
-  } else {
-    alert("通常検索ワードとして使用します");
-  }
+  window.open("https://www.google.com/search?q=" + encodeURIComponent(getValue()),"_blank");
 }
-
-/* ===== ASIN自動抽出（fetch無し・最安定） ===== */
-
-const params = new URLSearchParams(window.location.search);
-let q = params.get("q");
-
-if (q) {
-  q = decodeURIComponent(q);
-
-  const asinMatch = q.match(/B0[A-Z0-9]{8}/i);
-
-  if (asinMatch) {
-    document.getElementById("keyword").value = asinMatch[0];
-  } else {
-    document.getElementById("keyword").value = q;
-  }
-}
-
 </script>
 
 </body>
