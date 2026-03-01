@@ -54,7 +54,7 @@ function smartSearch(){
   }
 }
 
-/* ===== ASIN自動抽出（最終安定版） ===== */
+/* ===== ASIN自動抽出（fetch無し・最安定） ===== */
 
 const params = new URLSearchParams(window.location.search);
 let q = params.get("q");
@@ -62,30 +62,11 @@ let q = params.get("q");
 if (q) {
   q = decodeURIComponent(q);
 
-  // ① すでにASINが含まれている場合（通常Amazon URL）
   const asinMatch = q.match(/B0[A-Z0-9]{8}/i);
+
   if (asinMatch) {
     document.getElementById("keyword").value = asinMatch[0];
-  }
-
-  // ② 短縮URLの場合のみ resolve を使う
-  else if (q.includes("amzn.asia")) {
-    fetch("https://chic-sunburst-62b345.netlify.app/.netlify/functions/resolve?url=" + encodeURIComponent(q))
-      .then(res => res.json())
-      .then(data => {
-        if (data.asin) {
-          document.getElementById("keyword").value = data.asin;
-        } else {
-          document.getElementById("keyword").value = q;
-        }
-      })
-      .catch(() => {
-        document.getElementById("keyword").value = q;
-      });
-  }
-
-  // ③ それ以外
-  else {
+  } else {
     document.getElementById("keyword").value = q;
   }
 }
