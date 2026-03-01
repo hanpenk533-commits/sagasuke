@@ -4,13 +4,14 @@
 <meta charset="UTF-8">
 <title>さが助</title>
 <style>
-body { font-family: sans-serif; text-align:center; padding:40px; }
+body { font-family:sans-serif; text-align:center; padding:40px; }
 input { width:80%; padding:10px; font-size:16px; margin-bottom:20px; }
 button { display:block; width:80%; margin:10px auto; padding:12px;
 font-size:16px; border:none; border-radius:8px; cursor:pointer; }
 .mercari { background:#ff4d4f; color:white; }
 .yahoo { background:#ffcc00; }
 .aucfan { background:#0066cc; color:white; }
+.smart { background:black; color:white; }
 </style>
 </head>
 <body>
@@ -22,20 +23,35 @@ font-size:16px; border:none; border-radius:8px; cursor:pointer; }
 <button class="mercari" onclick="searchMercari()">メルカリ</button>
 <button class="yahoo" onclick="searchYahoo()">ヤフオク</button>
 <button class="aucfan" onclick="searchAucfan()">オークファン</button>
+<button class="smart" onclick="smartSearch()">スマート検索</button>
 
 <script>
-function getKeyword(){
-  return encodeURIComponent(document.getElementById("keyword").value);
+function getRaw(){
+  return document.getElementById("keyword").value;
+}
+function getEncoded(){
+  return encodeURIComponent(getRaw());
 }
 
 function searchMercari(){
-  window.open("https://jp.mercari.com/search?keyword="+getKeyword());
+  window.open("https://jp.mercari.com/search?keyword="+getEncoded());
 }
 function searchYahoo(){
-  window.open("https://auctions.yahoo.co.jp/search/search?p="+getKeyword());
+  window.open("https://auctions.yahoo.co.jp/search/search?p="+getEncoded());
 }
 function searchAucfan(){
-  window.open("https://aucfan.com/search1/q-"+getKeyword()+"/");
+  window.open("https://aucfan.com/search1/q-"+getEncoded()+"/");
+}
+
+function smartSearch(){
+  const text = getRaw();
+  const asinMatch = text.match(/B0[A-Z0-9]{8}/i);
+
+  if(asinMatch){
+    alert("ASIN検出: "+asinMatch[0]);
+  } else {
+    alert("通常検索ワードとして使用します");
+  }
 }
 
 const params = new URLSearchParams(window.location.search);
