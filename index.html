@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>さが助</title>
+<style>
+body { font-family: sans-serif; text-align:center; padding:40px; }
+input { width:80%; padding:10px; font-size:16px; margin-bottom:20px; }
+button { display:block; width:80%; margin:10px auto; padding:12px;
+font-size:16px; border:none; border-radius:8px; cursor:pointer; }
+.mercari { background:#ff4d4f; color:white; }
+.yahoo { background:#ffcc00; }
+.aucfan { background:#0066cc; color:white; }
+</style>
+</head>
+<body>
+
+<h1>さが助</h1>
+
+<input type="text" id="keyword" placeholder="検索したい文字やURLを入力">
+
+<button class="mercari" onclick="searchMercari()">メルカリ</button>
+<button class="yahoo" onclick="searchYahoo()">ヤフオク</button>
+<button class="aucfan" onclick="searchAucfan()">オークファン</button>
+
+<script>
+function getKeyword(){
+  return encodeURIComponent(document.getElementById("keyword").value);
+}
+
+function searchMercari(){
+  window.open("https://jp.mercari.com/search?keyword="+getKeyword());
+}
+function searchYahoo(){
+  window.open("https://auctions.yahoo.co.jp/search/search?p="+getKeyword());
+}
+function searchAucfan(){
+  window.open("https://aucfan.com/search1/q-"+getKeyword()+"/");
+}
+
+const params = new URLSearchParams(window.location.search);
+let q = params.get("q");
+
+if (q) {
+  q = decodeURIComponent(q);
+
+  if (q.includes("amzn.asia")) {
+    fetch("/.netlify/functions/resolve?url="+encodeURIComponent(q))
+      .then(res=>res.json())
+      .then(data=>{
+        if(data.asin){
+          document.getElementById("keyword").value = data.asin;
+        } else {
+          document.getElementById("keyword").value = q;
+        }
+      });
+  } else {
+    const asinMatch = q.match(/B0[A-Z0-9]{8}/i);
+    document.getElementById("keyword").value =
+      asinMatch ? asinMatch[0] : q;
+  }
+}
+</script>
+
+</body>
+</html>
