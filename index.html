@@ -54,28 +54,30 @@ function smartSearch(){
   }
 }
 
+/* ==== ASIN自動抽出処理 ==== */
+
 const params = new URLSearchParams(window.location.search);
 let q = params.get("q");
 
 if (q) {
   q = decodeURIComponent(q);
 
-  if (q.includes("amzn.asia")) {
-    fetch("/.netlify/functions/resolve?url="+encodeURIComponent(q))
-      .then(res=>res.json())
-      .then(data=>{
-        if(data.asin){
-          document.getElementById("keyword").value = data.asin;
-        } else {
-          document.getElementById("keyword").value = q;
-        }
-      });
-  } else {
-    const asinMatch = q.match(/B0[A-Z0-9]{8}/i);
-    document.getElementById("keyword").value =
-      asinMatch ? asinMatch[0] : q;
-  }
+  fetch("/.netlify/functions/resolve?url=" + encodeURIComponent(q))
+    .then(res => res.json())
+    .then(data => {
+      if (data.asin) {
+        document.getElementById("keyword").value = data.asin;
+      } else {
+        const asinMatch = q.match(/B0[A-Z0-9]{8}/i);
+        document.getElementById("keyword").value =
+          asinMatch ? asinMatch[0] : q;
+      }
+    })
+    .catch(() => {
+      document.getElementById("keyword").value = q;
+    });
 }
+
 </script>
 
 </body>
