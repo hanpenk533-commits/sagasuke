@@ -54,7 +54,7 @@ function smartSearch(){
   }
 }
 
-/* ==== ASIN自動抽出処理 ==== */
+/* ==== ASIN自動抽出処理（安定版） ==== */
 
 const params = new URLSearchParams(window.location.search);
 let q = params.get("q");
@@ -62,7 +62,7 @@ let q = params.get("q");
 if (q) {
   q = decodeURIComponent(q);
 
-  fetch("/.netlify/functions/resolve?url=" + encodeURIComponent(q))
+  fetch("https://chic-sunburst-62b345.netlify.app/.netlify/functions/resolve?url=" + encodeURIComponent(q))
     .then(res => res.json())
     .then(data => {
       if (data.asin) {
