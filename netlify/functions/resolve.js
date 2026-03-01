@@ -2,7 +2,10 @@ exports.handler = async function(event) {
   const url = event.queryStringParameters.url;
 
   if (!url) {
-    return { statusCode: 400, body: "No URL" };
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "No URL" })
+    };
   }
 
   try {
@@ -12,20 +15,20 @@ exports.handler = async function(event) {
     });
 
     const finalUrl = response.url;
-
     const asinMatch = finalUrl.match(/\/dp\/(B0[A-Z0-9]{8})/i);
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        finalUrl,
-        asin: asinMatch ? asinMatch[1] : null
+        asin: asinMatch ? asinMatch[1] : null,
+        finalUrl
       })
     };
-  } catch (e) {
+
+  } catch (err) {
     return {
       statusCode: 500,
-      body: e.toString()
+      body: JSON.stringify({ error: err.toString() })
     };
   }
 };
