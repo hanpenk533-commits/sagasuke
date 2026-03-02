@@ -12,29 +12,33 @@ body{
   text-align:center;
   padding:30px;
 }
+
 h1{
   font-size:28px;
   margin-bottom:20px;
 }
+
 input{
   width:90%;
   padding:12px;
   font-size:16px;
   margin-bottom:20px;
 }
+
 button{
   width:90%;
   padding:14px;
   margin:8px 0;
   font-size:16px;
   border:none;
-  border-radius:6px;
-  color:#fff;
+  border-radius:8px;
+  cursor:pointer;
 }
-.mercari{ background:#ea4f4f; }
-.yahoo{ background:#f5c400; color:#000; }
-.auction{ background:#2d66b3; }
-.smart{ background:#000; }
+
+.mercari{ background:#ff4d4f; color:white; }
+.yahoo{ background:#f4c542; }
+.auction{ background:#3b6cb7; color:white; }
+.smart{ background:black; color:white; }
 </style>
 </head>
 
@@ -42,7 +46,7 @@ button{
 
 <h1>さが助</h1>
 
-<input id="searchBox" placeholder="検索したい文字やURLを入力">
+<input id="searchInput" placeholder="検索したい文字やURLを入力">
 
 <button class="mercari" onclick="goMercari()">メルカリ</button>
 <button class="yahoo" onclick="goYahoo()">ヤフオク</button>
@@ -50,97 +54,76 @@ button{
 <button class="smart" onclick="smartSearch()">スマート検索</button>
 
 <script>
-const siteUrl = "https://chic-sunburst-62b345.netlify.app";
+const input = document.getElementById("searchInput");
 
-/* =========================
-   共有テキストからURLだけ抽出
-========================= */
-function extractUrl(text){
-  const match = text.match(/https?:\/\/[^\s]+/);
-  return match ? match[0] : text;
+/* ================================
+   URLパラメータ処理（超重要）
+================================ */
+const params = new URLSearchParams(window.location.search);
+const q = params.get("q");
+
+if(q){
+  resolveAmazon(q);
 }
 
-/* =========================
-   短縮URLを展開 → ASIN取得
-========================= */
-async function resolveUrl(input){
-  try{
-    const cleanInput = extractUrl(input);
+/* ================================
+   Amazon解決（短縮対応）
+================================ */
+function resolveAmazon(url){
 
-    const res = await fetch(
-      siteUrl + "/.netlify/functions/resolve?url=" + encodeURIComponent(cleanInput)
-    );
-
-    const data = await res.json();
+  fetch("/.netlify/functions/resolve?q=" + encodeURIComponent(url))
+  .then(res => res.json())
+  .then(data => {
 
     if(data.asin){
-      document.getElementById("searchBox").value = data.asin;
+      input.value = data.asin;
     }else{
-      document.getElementById("searchBox").value = cleanInput;
+      input.value = url;
     }
 
-  }catch(e){
-    document.getElementById("searchBox").value = extractUrl(input);
-  }
+  })
+  .catch(err => {
+    console.error(err);
+    input.value = url;
+  });
+
 }
 
-/* =========================
-   URLパラメータ取得
-========================= */
-function getQueryParam(){
-  const params = new URLSearchParams(window.location.search);
-  return params.get("q");
-}
-
-/* =========================
-   ページ読み込み時処理
-========================= */
-window.onload = function(){
-  const q = getQueryParam();
-  if(q){
-    resolveUrl(q);
-  }
-};
-
-/* =========================
-   検索ボタン処理
-========================= */
-function getValue(){
-  return document.getElementById("searchBox").value;
-}
+/* ================================
+   各検索
+================================ */
 
 function goMercari(){
-  window.open(
-    "https://jp.mercari.com/search?keyword=" +
-    encodeURIComponent(getValue()),
-    "_blank"
-  );
+  const keyword = input.value.trim();
+  if(!keyword) return;
+  window.open("https://www.mercari.com/jp/search/?keyword=" + encodeURIComponent(keyword), "_blank");
 }
 
 function goYahoo(){
-  window.open(
-    "https://auctions.yahoo.co.jp/search/search?p=" +
-    encodeURIComponent(getValue()),
-    "_blank"
-  );
+  const keyword = input.value.trim();
+  if(!keyword) return;
+  window.open("https://auctions.yahoo.co.jp/search/search?p=" + encodeURIComponent(keyword), "_blank");
 }
 
 function goAuction(){
-  window.open(
-    "https://aucfan.com/search1/q-" +
-    encodeURIComponent(getValue()) +
-    "/",
-    "_blank"
-  );
+  const keyword = input.value.trim();
+  if(!keyword) return;
+  window.open("https://aucfan.com/search1/q-" + encodeURIComponent(keyword) + "/", "_blank");
 }
 
+/* ================================
+   スマート検索
+================================ */
+
 function smartSearch(){
-  window.open(
-    "https://www.google.com/search?q=" +
-    encodeURIComponent(getValue()),
-    "_blank"
-  );
+  const keyword = input.value.trim();
+  if(!keyword) return;
+
+  window.open("https://www.mercari.com/jp/search/?keyword=" + encodeURIComponent(keyword), "_blank");
+  window.open("https://auctions.yahoo.co.jp/search/search?p=" + encodeURIComponent(keyword), "_blank");
+  window.open("https://aucfan.com/search1/q-" + encodeURIComponent(keyword) + "/", "_blank");
 }
+
 </script>
 
 </body>
