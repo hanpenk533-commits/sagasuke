@@ -60,29 +60,29 @@ const input = document.getElementById("searchInput");
    URLパラメータ処理
 ================================ */
 const params = new URLSearchParams(window.location.search);
-const q = params.get("q");
+const urlParam = params.get("url");
 
-if(q){
-  input.value = q;
-  autoResolve(q);
+if(urlParam){
+  input.value = urlParam;
+  resolveAmazon(urlParam);
 }
 
 /* ================================
-   入力されたら自動判定
+   入力がURLなら自動解決
 ================================ */
 input.addEventListener("input", function(){
   const value = input.value.trim();
   if(value.startsWith("http")){
-    autoResolve(value);
+    resolveAmazon(value);
   }
 });
 
 /* ================================
    Amazon解決（短縮対応）
 ================================ */
-function autoResolve(url){
+function resolveAmazon(url){
 
-  fetch("/.netlify/functions/resolve?q=" + encodeURIComponent(url))
+  fetch("/.netlify/functions/resolve?url=" + encodeURIComponent(url))
   .then(res => res.json())
   .then(data => {
 
