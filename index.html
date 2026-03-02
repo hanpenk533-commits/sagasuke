@@ -57,19 +57,30 @@ button{
 const input = document.getElementById("searchInput");
 
 /* ================================
-   URLパラメータ処理（超重要）
+   URLパラメータ処理
 ================================ */
 const params = new URLSearchParams(window.location.search);
 const q = params.get("q");
 
 if(q){
-  resolveAmazon(q);
+  input.value = q;
+  autoResolve(q);
 }
+
+/* ================================
+   入力されたら自動判定
+================================ */
+input.addEventListener("input", function(){
+  const value = input.value.trim();
+  if(value.startsWith("http")){
+    autoResolve(value);
+  }
+});
 
 /* ================================
    Amazon解決（短縮対応）
 ================================ */
-function resolveAmazon(url){
+function autoResolve(url){
 
   fetch("/.netlify/functions/resolve?q=" + encodeURIComponent(url))
   .then(res => res.json())
@@ -77,14 +88,11 @@ function resolveAmazon(url){
 
     if(data.asin){
       input.value = data.asin;
-    }else{
-      input.value = url;
     }
 
   })
   .catch(err => {
     console.error(err);
-    input.value = url;
   });
 
 }
@@ -110,10 +118,6 @@ function goAuction(){
   if(!keyword) return;
   window.open("https://aucfan.com/search1/q-" + encodeURIComponent(keyword) + "/", "_blank");
 }
-
-/* ================================
-   スマート検索
-================================ */
 
 function smartSearch(){
   const keyword = input.value.trim();
