@@ -12,19 +12,16 @@ body{
   text-align:center;
   padding:30px;
 }
-
 h1{
   font-size:28px;
   margin-bottom:20px;
 }
-
 input{
   width:90%;
   padding:12px;
   font-size:16px;
   margin-bottom:20px;
 }
-
 button{
   width:90%;
   padding:14px;
@@ -34,7 +31,6 @@ button{
   border-radius:6px;
   color:#fff;
 }
-
 .mercari{ background:#ea4f4f; }
 .yahoo{ background:#f5c400; color:#000; }
 .auction{ background:#2d66b3; }
@@ -56,27 +52,49 @@ button{
 <script>
 const siteUrl = "https://chic-sunburst-62b345.netlify.app";
 
+/* =========================
+   共有テキストからURLだけ抽出
+========================= */
+function extractUrl(text){
+  const match = text.match(/https?:\/\/[^\s]+/);
+  return match ? match[0] : text;
+}
+
+/* =========================
+   短縮URLを展開 → ASIN取得
+========================= */
 async function resolveUrl(input){
   try{
-    const res = await fetch(siteUrl + "/.netlify/functions/resolve?url=" + encodeURIComponent(input));
+    const cleanInput = extractUrl(input);
+
+    const res = await fetch(
+      siteUrl + "/.netlify/functions/resolve?url=" + encodeURIComponent(cleanInput)
+    );
+
     const data = await res.json();
 
     if(data.asin){
       document.getElementById("searchBox").value = data.asin;
     }else{
-      document.getElementById("searchBox").value = input;
+      document.getElementById("searchBox").value = cleanInput;
     }
 
   }catch(e){
-    document.getElementById("searchBox").value = input;
+    document.getElementById("searchBox").value = extractUrl(input);
   }
 }
 
+/* =========================
+   URLパラメータ取得
+========================= */
 function getQueryParam(){
   const params = new URLSearchParams(window.location.search);
   return params.get("q");
 }
 
+/* =========================
+   ページ読み込み時処理
+========================= */
 window.onload = function(){
   const q = getQueryParam();
   if(q){
@@ -84,24 +102,44 @@ window.onload = function(){
   }
 };
 
+/* =========================
+   検索ボタン処理
+========================= */
 function getValue(){
   return document.getElementById("searchBox").value;
 }
 
 function goMercari(){
-  window.open("https://www.mercari.com/jp/search/?keyword=" + encodeURIComponent(getValue()),"_blank");
+  window.open(
+    "https://jp.mercari.com/search?keyword=" +
+    encodeURIComponent(getValue()),
+    "_blank"
+  );
 }
 
 function goYahoo(){
-  window.open("https://auctions.yahoo.co.jp/search/search?p=" + encodeURIComponent(getValue()),"_blank");
+  window.open(
+    "https://auctions.yahoo.co.jp/search/search?p=" +
+    encodeURIComponent(getValue()),
+    "_blank"
+  );
 }
 
 function goAuction(){
-  window.open("https://aucfan.com/search1/q-" + encodeURIComponent(getValue()) + "/", "_blank");
+  window.open(
+    "https://aucfan.com/search1/q-" +
+    encodeURIComponent(getValue()) +
+    "/",
+    "_blank"
+  );
 }
 
 function smartSearch(){
-  window.open("https://www.google.com/search?q=" + encodeURIComponent(getValue()),"_blank");
+  window.open(
+    "https://www.google.com/search?q=" +
+    encodeURIComponent(getValue()),
+    "_blank"
+  );
 }
 </script>
 
